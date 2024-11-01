@@ -18,11 +18,13 @@ concurrency:
 
 jobs:
   # Build job
-  Generate Reports:
+  Generate_Reports:
     runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: my-branch
 
       - name: Generate HTML reports
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11
@@ -37,9 +39,9 @@ jobs:
           name: reports # Artifact name
           path: D:\test-project\GitHubPagesReport # Directory containing files to upload
 
-  Deploy Reports to Pages:
+  Deploy_Reports_to_Pages:
     concurrency: ci-${{ github.ref }}
-    needs: [upload] # The second job must depend on the first one to complete before running and uses ubuntu-latest instead of windows.
+    needs: [Generate_Reports] # The second job must depend on the first one to complete before running and uses ubuntu-latest instead of windows.
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts  # The built project is downloaded into the 'site' folder.
