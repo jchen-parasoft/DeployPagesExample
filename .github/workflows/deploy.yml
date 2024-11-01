@@ -2,6 +2,8 @@
 name: Deploy coverage reports to GitHub Pages
 
 on:
+  push:
+    branches: [ "action_deploy" ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -24,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: my-branch
+          ref: action_deploy
 
       - name: Generate HTML reports
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11
