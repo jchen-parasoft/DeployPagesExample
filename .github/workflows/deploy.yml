@@ -1,0 +1,58 @@
+# Sample workflow for building and deploying a Jekyll site to GitHub Pages
+name: Deploy coverage reports to GitHub Pages
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+
+jobs:
+  # Build job
+  Generate Reports:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate HTML reports
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.11
+        with:
+          reports: './reports/coverage-cobertura.xml'
+          targetdir: 'D:\test-project\GitHubPagesReport/coverage-report-${{ github.run_id }}'
+          reporttypes: Html
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports # Artifact name
+          path: D:\test-project\GitHubPagesReport # Directory containing files to upload
+
+  Deploy Reports to Pages:
+    concurrency: ci-${{ github.ref }}
+    needs: [upload] # The second job must depend on the first one to complete before running and uses ubuntu-latest instead of windows.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts  # The built project is downloaded into the 'site' folder.
+        uses: actions/download-artifact@v4
+        with:
+          name: reports
+          path: ./reports
+
+      - name: Upload artifact and deploy to unique path
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./reports
+
+      - name: Deploy to GitHub Pages with unique path
+        id: deployment
+        uses: actions/deploy-pages@v4
